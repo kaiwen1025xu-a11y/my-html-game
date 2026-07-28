@@ -164,15 +164,15 @@
 
         /* 三张图片不同的可爱彩色边框 */
         .tile-0 {
-            border: 3.5px solid #ff6392; /* 甜心粉 - one.jpg */
+            border: 3.5px solid #ff6392;
             box-shadow: 0 4px 10px rgba(255, 99, 146, 0.35);
         }
         .tile-1 {
-            border: 3.5px solid #ffc100; /* 元气黄 - two.jpg */
+            border: 3.5px solid #ffc100;
             box-shadow: 0 4px 10px rgba(255, 193, 0, 0.35);
         }
         .tile-2 {
-            border: 3.5px solid #5aa9e6; /* 天空蓝 - three.jpg */
+            border: 3.5px solid #5aa9e6;
             box-shadow: 0 4px 10px rgba(90, 169, 230, 0.35);
         }
 
@@ -275,13 +275,8 @@
         const BOARD_SIZE = 6;
         const TILE_TYPES = 3;
         
-        // 支持同目录相对路径以及绝对路径兼容
+        // 【修改点1】仅保留云端环境（GitHub Pages）与本地项目公用的相对路径
         const IMAGES = ['one.jpg', 'two.jpg', 'three.jpg'];
-        const ABS_PATHS = [
-            'file:///D:/project/pictures/one.jpg',
-            'file:///D:/project/pictures/two.jpg',
-            'file:///D:/project/pictures/three.jpg'
-        ];
         
         // 俏皮称号系统
         const TITLES = [
@@ -341,16 +336,12 @@
                     img.src = IMAGES[type];
                     img.alt = `photo-${type}`;
                     
-                    // 双重容错：相对路径加载失败 -> 尝试D盘路径 -> 失败显示可爱表情
+                    // 【修改点2】彻底删除了对 D 盘盘符的依赖。如果在网页上读取不到对应文件名，直接优雅地转换为表情占位，不报错、不破版。
                     img.onerror = function() {
-                        if (this.src !== ABS_PATHS[type]) {
-                            this.src = ABS_PATHS[type];
-                        } else {
-                            this.style.display = 'none';
-                            tile.innerHTML = ['👩‍❤️‍👨', '🐱💖', '✨🤪'][type];
-                            tile.style.fontSize = '30px';
-                            tile.style.background = ['#ffe3ed', '#fff3cd', '#d1ecf1'][type];
-                        }
+                        this.style.display = 'none';
+                        tile.innerHTML = ['👩‍❤️‍👨', '🐱💖', '✨🤪'][type];
+                        tile.style.fontSize = '30px';
+                        tile.style.background = ['#ffe3ed', '#fff3cd', '#d1ecf1'][type];
                     };
 
                     tile.appendChild(img);
