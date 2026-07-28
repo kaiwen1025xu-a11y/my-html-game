@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>甜蜜贴贴消消乐 💕</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #fff0f5 0%, #ffe6ee 50%, #fef9d7 100%);
+            font-family: 'Comic Sans MS', 'Rounded Mplus 1c', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #5a3e36;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: #ff5e8e;
+            text-shadow: 2px 2px 0px #fff, 4px 4px 0px #ffd1e3;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #8c7268;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 6px 16px;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: inline-block;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 900px;
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.9);
+            border: 4px solid #fff;
+            border-radius: 25px;
+            padding: 20px;
+            width: 220px;
+            box-shadow: 0 10px 25px rgba(255, 148, 178, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .score-box {
+            background: #fff5f8;
+            border: 2px dashed #ff9eba;
+            border-radius: 18px;
+            padding: 12px;
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+            color: #a87c8a;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #ff5e8e;
+            transition: transform 0.2s;
+        }
+
+        .status-title {
+            font-size: 0.95rem;
+            color: #ff70a6;
+            font-weight: bold;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border-radius: 12px;
+            padding: 5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #ff70a6, #ff97b7);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 15px rgba(255, 112, 166, 0.4);
+            font-family: inherit;
+        }
+
+        .btn-restart:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 20px rgba(255, 112, 166, 0.6);
+        }
+
+        .btn-restart:active {
+            transform: translateY(1px);
+        }
+
+        /* 棋盘样式 */
+        .board {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(255, 148, 178, 0.25);
+            border: 6px solid #fff;
+            display: grid;
+            grid-template-columns: repeat(6, 68px);
+            grid-template-rows: repeat(6, 68px);
+            gap: 10px;
+            position: relative;
+        }
+
+        .tile {
+            width: 68px;
+            height: 68px;
+            border-radius: 16px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #eee;
+        }
+
+        .tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+            transition: transform 0.3s;
+        }
+
+        /* 三张图片不同的可爱彩色边框 */
+        .tile-0 {
+            border: 3.5px solid #ff6392; /* 甜心粉 - one.jpg */
+            box-shadow: 0 4px 10px rgba(255, 99, 146, 0.35);
+        }
+        .tile-1 {
+            border: 3.5px solid #ffc100; /* 元气黄 - two.jpg */
+            box-shadow: 0 4px 10px rgba(255, 193, 0, 0.35);
+        }
+        .tile-2 {
+            border: 3.5px solid #5aa9e6; /* 天空蓝 - three.jpg */
+            box-shadow: 0 4px 10px rgba(90, 169, 230, 0.35);
+        }
+
+        .tile:hover {
+            transform: scale(1.08);
+            z-index: 2;
+        }
+
+        .tile.selected {
+            transform: scale(1.15) rotate(6deg);
+            z-index: 10;
+            box-shadow: 0 0 18px #ff5e8e, 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .tile.selected::after {
+            content: '✨';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 16px;
+            animation: spin 1s infinite linear;
+        }
+
+        .tile.matched {
+            animation: popOut 0.3s forwards;
+        }
+
+        /* 浮动文字特效 */
+        .combo-text {
+            position: absolute;
+            pointer-events: none;
+            font-weight: bold;
+            font-size: 1.4rem;
+            color: #ff5e8e;
+            text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff;
+            animation: floatUp 0.8s forwards ease-out;
+            z-index: 20;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        @keyframes popOut {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2) rotate(-10deg); opacity: 0.8; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(0.8); }
+            50% { transform: translateY(-25px) scale(1.2); }
+            100% { opacity: 0; transform: translateY(-45px) scale(1); }
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .instructions {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #8c7268;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>💕 甜蜜贴贴消消乐 💕</h1>
+        <div class="subtitle">连成3张相同照片，触发超甜暴击！🐱✨</div>
+    </div>
+
+    <div class="game-container">
+        <div class="board" id="board"></div>
+
+        <div class="sidebar">
+            <div class="score-box">
+                <div class="score-label">✨ 甜蜜指数 (得分)</div>
+                <div class="score-value" id="score">0</div>
+            </div>
+            <div class="status-title" id="status-text">正在加载甜蜜... 🌸</div>
+            <button class="btn-restart" onclick="restartGame()">🔄 重新洗牌贴贴</button>
+        </div>
+    </div>
+
+    <div class="instructions">
+        💡 <b>玩法小提示：</b>点击一张照片，再点击相邻的照片进行交换。<br>
+        把3张或更多相同的照片连成一行或一列，就能解锁「甜蜜暴击」并得分哦！
+    </div>
+
+    <script>
+        const BOARD_SIZE = 6;
+        const TILE_TYPES = 3;
+        
+        // 支持同目录相对路径以及绝对路径兼容
+        const IMAGES = ['one.jpg', 'two.jpg', 'three.jpg'];
+        const ABS_PATHS = [
+            'file:///D:/project/pictures/one.jpg',
+            'file:///D:/project/pictures/two.jpg',
+            'file:///D:/project/pictures/three.jpg'
+        ];
+        
+        // 俏皮称号系统
+        const TITLES = [
+            { max: 50, text: "🌱 初级吃瓜群众 👀" },
+            { max: 150, text: "🌸 甜蜜营业中..." },
+            { max: 300, text: "🐶 满嘴都是狗粮！💖" },
+            { max: 500, text: "🔥 甜蜜贴贴力 MAX！" },
+            { max: 9999, text: "🏆 宇宙无敌般配证书！✨" }
+        ];
+
+        let board = [];
+        let selectedTile = null;
+        let score = 0;
+        let isProcessing = false;
+
+        const boardEl = document.getElementById('board');
+        const scoreEl = document.getElementById('score');
+        const statusEl = document.getElementById('status-text');
+
+        function initGame() {
+            score = 0;
+            updateScore(0);
+            isProcessing = false;
+            selectedTile = null;
+            boardEl.innerHTML = '';
+            
+            // 初始化棋盘，确保初始无连续3个
+            board = [];
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                board[r] = [];
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    let type;
+                    do {
+                        type = Math.floor(Math.random() * TILE_TYPES);
+                    } while (
+                        (c >= 2 && board[r][c-1] === type && board[r][c-2] === type) ||
+                        (r >= 2 && board[r-1][c] === type && board[r-2][c] === type)
+                    );
+                    board[r][c] = type;
+                }
+            }
+            renderBoard();
+            updateStatus();
+        }
+
+        function renderBoard() {
+            boardEl.innerHTML = '';
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    const type = board[r][c];
+                    const tile = document.createElement('div');
+                    tile.className = `tile tile-${type}`;
+                    tile.dataset.row = r;
+                    tile.dataset.col = c;
+                    
+                    const img = document.createElement('img');
+                    img.src = IMAGES[type];
+                    img.alt = `photo-${type}`;
+                    
+                    // 双重容错：相对路径加载失败 -> 尝试D盘路径 -> 失败显示可爱表情
+                    img.onerror = function() {
+                        if (this.src !== ABS_PATHS[type]) {
+                            this.src = ABS_PATHS[type];
+                        } else {
+                            this.style.display = 'none';
+                            tile.innerHTML = ['👩‍❤️‍👨', '🐱💖', '✨🤪'][type];
+                            tile.style.fontSize = '30px';
+                            tile.style.background = ['#ffe3ed', '#fff3cd', '#d1ecf1'][type];
+                        }
+                    };
+
+                    tile.appendChild(img);
+                    tile.addEventListener('click', () => onTileClick(r, c));
+                    boardEl.appendChild(tile);
+                }
+            }
+        }
+
+        function getTileEl(r, c) {
+            return document.querySelector(`.tile[data-row="${r}"][data-col="${c}"]`);
+        }
+
+        function onTileClick(r, c) {
+            if (isProcessing) return;
+
+            const clickedEl = getTileEl(r, c);
+
+            if (!selectedTile) {
+                selectedTile = { r, c };
+                clickedEl.classList.add('selected');
+                return;
+            }
+
+            if (selectedTile.r === r && selectedTile.c === c) {
+                clickedEl.classList.remove('selected');
+                selectedTile = null;
+                return;
+            }
+
+            const prevEl = getTileEl(selectedTile.r, selectedTile.c);
+            const isAdjacent = (Math.abs(selectedTile.r - r) + Math.abs(selectedTile.c - c)) === 1;
+
+            if (isAdjacent) {
+                prevEl.classList.remove('selected');
+                swapTiles(selectedTile.r, selectedTile.c, r, c);
+                selectedTile = null;
+            } else {
+                prevEl.classList.remove('selected');
+                selectedTile = { r, c };
+                clickedEl.classList.add('selected');
+            }
+        }
+
+        async function swapTiles(r1, c1, r2, c2) {
+            isProcessing = true;
+
+            // 交换数据
+            let temp = board[r1][c1];
+            board[r1][c1] = board[r2][c2];
+            board[r2][c2] = temp;
+
+            renderBoard();
+
+            const matches = findMatches();
+            if (matches.length > 0) {
+                await processMatches();
+            } else {
+                // 如果不能消除，自动换回
+                setTimeout(() => {
+                    temp = board[r1][c1];
+                    board[r1][c1] = board[r2][c2];
+                    board[r2][c2] = temp;
+                    renderBoard();
+                    isProcessing = false;
+                }, 300);
+            }
+        }
+
+        function findMatches() {
+            const matched = new Set();
+
+            // 横向检测
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE - 2; c++) {
+                    const type = board[r][c];
+                    if (type !== null && type === board[r][c+1] && type === board[r][c+2]) {
+                        matched.add(`${r},${c}`);
+                        matched.add(`${r},${c+1}`);
+                        matched.add(`${r},${c+2}`);
+                    }
+                }
+            }
+
+            // 纵向检测
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                for (let r = 0; r < BOARD_SIZE - 2; r++) {
+                    const type = board[r][c];
+                    if (type !== null && type === board[r+1][c] && type === board[r+2][c]) {
+                        matched.add(`${r},${c}`);
+                        matched.add(`${r+1},${c}`);
+                        matched.add(`${r+2},${c}`);
+                    }
+                }
+            }
+
+            return Array.from(matched).map(coord => {
+                const [r, c] = coord.split(',').map(Number);
+                return { r, c };
+            });
+        }
+
+        async function processMatches() {
+            let combo = 0;
+            while (true) {
+                const matches = findMatches();
+                if (matches.length === 0) break;
+
+                combo++;
+                const gain = matches.length * 10 * combo;
+                updateScore(score + gain);
+
+                // 播放消除特效
+                matches.forEach(({ r, c }, index) => {
+                    const el = getTileEl(r, c);
+                    if (el) {
+                        el.classList.add('matched');
+                        if (index === 0 && combo > 1) {
+                            showComboText(el, `连击 x${combo}! 🔥`);
+                        } else if (index === 0) {
+                            showComboText(el, ['太甜啦! 💖', '贴贴! 🐱', '好爱! ✨'][Math.floor(Math.random()*3)]);
+                        }
+                    }
+                    board[r][c] = null;
+                });
+
+                await sleep(350);
+
+                // 下落填补
+                dropAndFill();
+                renderBoard();
+                await sleep(300);
+            }
+            isProcessing = false;
+            checkNoMoreMoves();
+        }
+
+        function dropAndFill() {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                let emptyRow = BOARD_SIZE - 1;
+                for (let r = BOARD_SIZE - 1; r >= 0; r--) {
+                    if (board[r][c] !== null) {
+                        if (r !== emptyRow) {
+                            board[emptyRow][c] = board[r][c];
+                            board[r][c] = null;
+                        }
+                        emptyRow--;
+                    }
+                }
+                for (let r = emptyRow; r >= 0; r--) {
+                    board[r][c] = Math.floor(Math.random() * TILE_TYPES);
+                }
+            }
+        }
+
+        function showComboText(targetEl, text) {
+            const floatEl = document.createElement('div');
+            floatEl.className = 'combo-text';
+            floatEl.innerText = text;
+            floatEl.style.left = `${targetEl.offsetLeft + 10}px`;
+            floatEl.style.top = `${targetEl.offsetTop}px`;
+            boardEl.appendChild(floatEl);
+            setTimeout(() => floatEl.remove(), 800);
+        }
+
+        function updateScore(newScore) {
+            score = newScore;
+            scoreEl.innerText = score;
+            scoreEl.style.transform = 'scale(1.3)';
+            setTimeout(() => scoreEl.style.transform = 'scale(1)', 200);
+            updateStatus();
+        }
+
+        function updateStatus() {
+            for (let title of TITLES) {
+                if (score <= title.max) {
+                    statusEl.innerText = title.text;
+                    break;
+                }
+            }
+        }
+
+        function checkNoMoreMoves() {
+            let hasMove = false;
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    const dirs = [[0,1], [1,0]];
+                    for (let [dr, dc] of dirs) {
+                        const nr = r + dr, nc = c + dc;
+                        if (nr < BOARD_SIZE && nc < BOARD_SIZE) {
+                            let tmp = board[r][c];
+                            board[r][c] = board[nr][nc];
+                            board[nr][nc] = tmp;
+                            if (findMatches().length > 0) hasMove = true;
+                            tmp = board[r][c];
+                            board[r][c] = board[nr][nc];
+                            board[nr][nc] = tmp;
+                            if (hasMove) return;
+                        }
+                    }
+                }
+            }
+            if (!hasMove) {
+                statusEl.innerText = "没有可消的啦，自动重新洗牌！🌀";
+                setTimeout(initGame, 1500);
+            }
+        }
+
+        function restartGame() {
+            if (confirm("确定要重新洗牌开始新游戏吗？💕")) {
+                initGame();
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
